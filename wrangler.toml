@@ -1,0 +1,6 @@
+name = "permit-intel"
+main = "worker/index.ts"
+compatibility_date = "2026-03-22"
+
+[vars]
+PREFER_OPENROUTER_FIRST = "true"

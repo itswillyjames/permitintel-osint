@@ -3,16 +3,19 @@
 <head>
   <title>PermitIntel OSINT</title>
 </head>
-<body style="font-family: sans-serif; padding: 20px;">
+<body style="font-family: sans-serif; padding: 20px; background: #0f172a; color: white;">
+  <h1>PermitIntel OSINT</h1>
+  <p>Live Worker: https://permit-intel.permit-intel.workers.dev/analyze</p>
 
-  <h1>🚀 PermitIntel OSINT</h1>
+  <button onclick="run()" style="padding:10px 16px; cursor:pointer;">Generate Deal Asset</button>
 
-  <button onclick="run()">Generate Deal Asset</button>
-
-  <pre id="output" style="margin-top:20px; background:#111; color:#0f0; padding:10px;"></pre>
+  <pre id="output" style="margin-top:20px; background:#111827; color:#86efac; padding:16px; white-space:pre-wrap;"></pre>
 
   <script>
     async function run() {
+      const output = document.getElementById("output");
+      output.innerText = "Running...";
+
       const res = await fetch("https://permit-intel.permit-intel.workers.dev/analyze", {
         method: "POST",
         headers: {
@@ -30,11 +33,8 @@
       });
 
       const data = await res.json();
-
-      document.getElementById("output").innerText =
-        JSON.stringify(data, null, 2);
+      output.innerText = JSON.stringify(data, null, 2);
     }
   </script>
-
 </body>
 </html>
