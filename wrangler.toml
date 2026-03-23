@@ -3,4 +3,14 @@ main = "worker/index.ts"
 compatibility_date = "2026-03-22"
 
 [vars]
-PREFER_OPENROUTER_FIRST = "true"
+OPENROUTER_MODEL = "openrouter/free"
+GROQ_MODEL = "llama-3.3-70b-versatile"
+PREFER_OPENROUTER_FIRST = "false"
+
+CHICAGO_PERMITS_URL = "https://data.cityofchicago.org/resource/ydr8-5enu.json"
+YAKIMA_PERMITS_URL = ""
+SPOKANE_PERMITS_URL = ""
+BOISE_PERMITS_URL = ""
+CHATTANOOGA_PERMITS_URL = ""
+
+SOCRATA_APP_TOKEN = "3m9n6PBoHjcU09FRFn6ABP1Km"
