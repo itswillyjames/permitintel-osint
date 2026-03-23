@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PermitIntel OSINT</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+
+  <h1>🚀 PermitIntel OSINT</h1>
+
+  <button onclick="run()">Generate Deal Asset</button>
+
+  <pre id="output" style="margin-top:20px; background:#111; color:#0f0; padding:10px;"></pre>
+
+  <script>
+    async function run() {
+      const res = await fetch("https://permit-intel.permit-intel.workers.dev/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          permit: {
+            address: "123 Main St",
+            city: "Yakima",
+            description: "Restaurant remodel with electrical + plumbing upgrades",
+            estimatedCost: 85000,
+            applicant: "ABC Development LLC"
+          }
+        })
+      });
+
+      const data = await res.json();
+
+      document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+    }
+  </script>
+
+</body>
+</html>
