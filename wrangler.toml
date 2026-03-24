@@ -2,6 +2,9 @@ name = "permit-intel"
 main = "worker/index.ts"
 compatibility_date = "2026-03-22"
 
+[assets]
+directory = "./app"
+
 [vars]
 OPENROUTER_MODEL = "openrouter/free"
 GROQ_MODEL = "llama-3.3-70b-versatile"

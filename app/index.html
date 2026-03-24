@@ -1,40 +1,1265 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PermitIntel OSINT</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --panel-2: #172033;
+      --border: #24314a;
+      --text: #e5edf7;
+      --muted: #94a3b8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --accent: #38bdf8;
+      --accent-2: #a78bfa;
+      --chip: #1f2a44;
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, #08111f 0%, #0b1220 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    a { color: var(--accent); }
+    button, select, input {
+      font: inherit;
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--muted);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.04);
+    }
+
+    .dot.good { background: var(--good); }
+    .dot.warn { background: var(--warn); }
+    .dot.bad { background: var(--bad); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.015));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.015);
+    }
+
+    .panel-header h2,
+    .panel-header h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .panel-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 16px 18px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0c1526;
+      color: var(--text);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      background: #13203a;
+      color: var(--text);
+      transition: .15s ease;
+      min-height: 46px;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: #3a4d71;
+      background: #182847;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-color: transparent;
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, #1f2937, #273549);
+    }
+
+    button.ghost {
+      background: transparent;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .permits-list {
+      display: grid;
+      gap: 12px;
+      max-height: 820px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .permit-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #0d182b, #0d1523);
+      padding: 14px;
+      cursor: pointer;
+      transition: .15s ease;
+    }
+
+    .permit-card:hover {
+      transform: translateY(-1px);
+      border-color: #385178;
+    }
+
+    .permit-card.active {
+      border-color: #4f7cff;
+      box-shadow: 0 0 0 1px rgba(79,124,255,.25) inset;
+    }
+
+    .permit-card h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+
+    .permit-meta {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 1200px) {
+      .section-grid { grid-template-columns: 1fr; }
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero-main {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background:
+        radial-gradient(1200px 240px at top left, rgba(56,189,248,.18), transparent 35%),
+        radial-gradient(900px 200px at top right, rgba(167,139,250,.18), transparent 30%),
+        #0d1628;
+    }
+
+    .hero-main h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-main p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 920px) {
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #0d1524;
+      padding: 14px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #0d1524;
+      padding: 14px;
+    }
+
+    .item-card h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .item-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .kv {
+      display: grid;
+      gap: 8px;
+    }
+
+    .kv-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(255,255,255,.08);
+    }
+
+    .kv-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .kv-key {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .kv-value {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--chip);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .list li {
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #cbd5e1;
+      background: #0a1020;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 360px;
+      color: var(--muted);
+      text-align: center;
+      padding: 30px;
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      background: rgba(255,255,255,.015);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar button {
+      flex: 1 1 0;
+      min-width: 140px;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .split-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 800px) {
+      .split-2 { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-<body style="font-family: sans-serif; padding: 20px; background: #0f172a; color: white;">
-  <h1>PermitIntel OSINT</h1>
-  <p>Live Worker: https://permit-intel.permit-intel.workers.dev/analyze</p>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <h1>PermitIntel OSINT</h1>
+        <p>Live permit intelligence → multi-vertical monetization → first-deal workflow</p>
+      </div>
 
-  <button onclick="run()" style="padding:10px 16px; cursor:pointer;">Generate Deal Asset</button>
+      <div class="status-row">
+        <div class="chip"><span id="healthDot" class="dot"></span><span id="healthText">Checking health…</span></div>
+        <div class="chip"><span class="dot good"></span><span id="workerUrlLabel">permit-intel.permit-intel.workers.dev</span></div>
+      </div>
+    </div>
 
-  <pre id="output" style="margin-top:20px; background:#111827; color:#86efac; padding:16px; white-space:pre-wrap;"></pre>
+    <div class="grid">
+      <aside class="panel">
+        <div class="panel-header">
+          <h2>Operator Console</h2>
+          <p>Pick a city, pull fresh permits, then click one to analyze or run a live batch.</p>
+        </div>
+        <div class="panel-body">
+          <div class="controls">
+            <div class="field">
+              <label for="citySelect">City</label>
+              <select id="citySelect"></select>
+            </div>
+
+            <div class="field">
+              <label for="limitInput">Permit count</label>
+              <input id="limitInput" type="number" min="1" max="25" value="5" />
+            </div>
+
+            <div class="button-row">
+              <button id="fetchBtn" class="primary">Fetch Permits</button>
+              <button id="analyzeLiveBtn" class="secondary">Analyze Live</button>
+            </div>
+
+            <div class="button-row-3">
+              <button id="analyzeSelectedBtn">Analyze Selected</button>
+              <button id="exportBtn" class="ghost">Export OpenRefine</button>
+              <button id="refreshHealthBtn" class="ghost">Refresh</button>
+            </div>
+
+            <div class="small" id="cityStatusText">Loading city registry…</div>
+          </div>
+
+          <div style="height:16px"></div>
+
+          <div class="panel" style="border-radius:16px;">
+            <div class="panel-header">
+              <h3>Fetched Permits</h3>
+              <p id="permitsSummary">No permits loaded yet.</p>
+            </div>
+            <div class="panel-body">
+              <div id="permitsList" class="permits-list"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="stack">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Analysis Workspace</h2>
+            <p>Turn permit activity into buyer targets, packaging ideas, and outreach-ready assets.</p>
+          </div>
+          <div class="panel-body">
+            <div id="analysisEmpty" class="empty">
+              <div>
+                <h3 style="margin:0 0 8px;">No analysis loaded yet</h3>
+                <p style="margin:0;">Fetch permits, then click one to analyze it — or run Analyze Live for a fast batch pass.</p>
+              </div>
+            </div>
+
+            <div id="analysisRoot" style="display:none;" class="stack">
+              <div class="hero">
+                <div class="hero-main">
+                  <div class="section-title">Fastest First Deal</div>
+                  <h2 id="primaryTitle">—</h2>
+                  <p id="primaryWhy">—</p>
+                  <div style="height:12px"></div>
+                  <div class="tag-row">
+                    <div class="tag" id="primaryBuyerTag">Buyer: —</div>
+                    <div class="tag" id="primaryMonetizationTag">Value: —</div>
+                    <div class="tag" id="primaryPermitTypeTag">Type: —</div>
+                  </div>
+                </div>
+
+                <div class="hero-stats">
+                  <div class="stat">
+                    <div class="stat-label">Buyer Targets</div>
+                    <div class="stat-value" id="statBuyerTargets">0</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-label">Manifest Entities</div>
+                    <div class="stat-value" id="statEntities">0</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-label">Opportunity Verticals</div>
+                    <div class="stat-value" id="statVerticals">0</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-label">Provider</div>
+                    <div class="stat-value" id="statProvider">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="toolbar">
+                <button id="tabSummaryBtn" class="primary">Summary</button>
+                <button id="tabBuyersBtn">Buyer Targets</button>
+                <button id="tabManifestBtn">Manifest</button>
+                <button id="tabExecutionBtn">Execution</button>
+                <button id="tabDebugBtn">Debug</button>
+              </div>
+
+              <div id="tabSummary" class="section-grid">
+                <div class="stack">
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Opportunity Graph</h3>
+                      <p>Ranked commercialization paths and cross-sell chains.</p>
+                    </div>
+                    <div class="panel-body">
+                      <div id="verticalsCards" class="cards"></div>
+                    </div>
+                  </section>
+
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Cross-Sell Chains</h3>
+                      <p>Sequences that expand one permit into multiple revenue paths.</p>
+                    </div>
+                    <div class="panel-body">
+                      <div id="chainsCards" class="cards"></div>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="stack">
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Packaging Ideas</h3>
+                      <p>How to productize the intelligence and price it.</p>
+                    </div>
+                    <div class="panel-body">
+                      <div id="packagingCards" class="cards"></div>
+                    </div>
+                  </section>
+
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Outreach Angles</h3>
+                      <p>Vertical-specific hooks for first contact.</p>
+                    </div>
+                    <div class="panel-body">
+                      <div id="outreachCards" class="cards"></div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <div id="tabBuyers" class="section-grid" style="display:none;">
+                <section class="panel">
+                  <div class="panel-header">
+                    <h3>Buyer Targets</h3>
+                    <p>Who to sell this to first, and why.</p>
+                  </div>
+                  <div class="panel-body">
+                    <div id="buyerTargetsCards" class="cards"></div>
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel-header">
+                    <h3>Buyer Recon</h3>
+                    <p>Why the project matters and how to frame urgency.</p>
+                  </div>
+                  <div class="panel-body">
+                    <div id="buyerReconKv" class="kv"></div>
+                  </div>
+                </section>
+              </div>
+
+              <div id="tabManifest" class="section-grid" style="display:none;">
+                <section class="panel">
+                  <div class="panel-header">
+                    <h3>Manifest Entities</h3>
+                    <p>Deterministic contact and role extraction from the permit source.</p>
+                  </div>
+                  <div class="panel-body">
+                    <div id="manifestCards" class="cards"></div>
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel-header">
+                    <h3>Permit Snapshot</h3>
+                    <p>Canonical summary of the selected permit.</p>
+                  </div>
+                  <div class="panel-body">
+                    <div id="manifestKv" class="kv"></div>
+                  </div>
+                </section>
+              </div>
+
+              <div id="tabExecution" class="section-grid" style="display:none;">
+                <div class="stack">
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Closing SOP</h3>
+                      <p>Simple sequence to turn permit intelligence into a paid transaction.</p>
+                    </div>
+                    <div class="panel-body">
+                      <div id="closingKv" class="kv"></div>
+                    </div>
+                  </section>
+
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Verification Steps</h3>
+                      <p>What to confirm before pitching the asset as verified intel.</p>
+                    </div>
+                    <div class="panel-body">
+                      <ul id="verificationList" class="list"></ul>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="stack">
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Dork Queries</h3>
+                      <p>Public-source search expansions for deeper OSINT.</p>
+                    </div>
+                    <div class="panel-body">
+                      <div id="dorkCards" class="cards"></div>
+                    </div>
+                  </section>
+
+                  <section class="panel">
+                    <div class="panel-header">
+                      <h3>Evidence / Inference / Unknowns</h3>
+                      <p>Trust layer for what is known, inferred, or still missing.</p>
+                    </div>
+                    <div class="panel-body">
+                      <div class="split-2">
+                        <div>
+                          <div class="section-title">Evidence</div>
+                          <ul id="evidenceList" class="list"></ul>
+                        </div>
+                        <div>
+                          <div class="section-title">Inferences</div>
+                          <ul id="inferencesList" class="list"></ul>
+                        </div>
+                      </div>
+                      <div style="height:14px"></div>
+                      <div>
+                        <div class="section-title">Unknowns</div>
+                        <ul id="unknownsList" class="list"></ul>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <div id="tabDebug" class="section-grid" style="display:none;">
+                <section class="panel">
+                  <div class="panel-header">
+                    <h3>Debug</h3>
+                    <p>Provider, parser, playbook, and fallback visibility.</p>
+                  </div>
+                  <div class="panel-body">
+                    <div id="debugKv" class="kv"></div>
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel-header">
+                    <h3>Raw Preview</h3>
+                    <p>Useful when the model gets creative and forgets JSON manners.</p>
+                  </div>
+                  <div class="panel-body">
+                    <div id="rawPreview" class="mono">—</div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="footer-note">
+              Tip: fetch permits first, then click the most promising permit. Analyze Live is great for quick scanning, but analyzing one permit at a time is better for human judgment.
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
 
   <script>
-    async function run() {
-      const output = document.getElementById("output");
-      output.innerText = "Running...";
+    const WORKER_BASE = "https://permit-intel.permit-intel.workers.dev";
 
-      const res = await fetch("https://permit-intel.permit-intel.workers.dev/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          permit: {
-            address: "123 Main St",
-            city: "Yakima",
-            description: "Restaurant remodel with electrical + plumbing upgrades",
-            estimatedCost: 85000,
-            applicant: "ABC Development LLC"
-          }
-        })
+    const state = {
+      cities: [],
+      permits: [],
+      selectedPermit: null,
+      selectedAnalysis: null
+    };
+
+    const els = {
+      citySelect: document.getElementById("citySelect"),
+      limitInput: document.getElementById("limitInput"),
+      fetchBtn: document.getElementById("fetchBtn"),
+      analyzeLiveBtn: document.getElementById("analyzeLiveBtn"),
+      analyzeSelectedBtn: document.getElementById("analyzeSelectedBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      refreshHealthBtn: document.getElementById("refreshHealthBtn"),
+
+      healthDot: document.getElementById("healthDot"),
+      healthText: document.getElementById("healthText"),
+      cityStatusText: document.getElementById("cityStatusText"),
+      permitsList: document.getElementById("permitsList"),
+      permitsSummary: document.getElementById("permitsSummary"),
+
+      analysisEmpty: document.getElementById("analysisEmpty"),
+      analysisRoot: document.getElementById("analysisRoot"),
+
+      primaryTitle: document.getElementById("primaryTitle"),
+      primaryWhy: document.getElementById("primaryWhy"),
+      primaryBuyerTag: document.getElementById("primaryBuyerTag"),
+      primaryMonetizationTag: document.getElementById("primaryMonetizationTag"),
+      primaryPermitTypeTag: document.getElementById("primaryPermitTypeTag"),
+
+      statBuyerTargets: document.getElementById("statBuyerTargets"),
+      statEntities: document.getElementById("statEntities"),
+      statVerticals: document.getElementById("statVerticals"),
+      statProvider: document.getElementById("statProvider"),
+
+      verticalsCards: document.getElementById("verticalsCards"),
+      chainsCards: document.getElementById("chainsCards"),
+      packagingCards: document.getElementById("packagingCards"),
+      outreachCards: document.getElementById("outreachCards"),
+      buyerTargetsCards: document.getElementById("buyerTargetsCards"),
+      buyerReconKv: document.getElementById("buyerReconKv"),
+      manifestCards: document.getElementById("manifestCards"),
+      manifestKv: document.getElementById("manifestKv"),
+      closingKv: document.getElementById("closingKv"),
+      verificationList: document.getElementById("verificationList"),
+      dorkCards: document.getElementById("dorkCards"),
+      evidenceList: document.getElementById("evidenceList"),
+      inferencesList: document.getElementById("inferencesList"),
+      unknownsList: document.getElementById("unknownsList"),
+      debugKv: document.getElementById("debugKv"),
+      rawPreview: document.getElementById("rawPreview"),
+
+      tabSummaryBtn: document.getElementById("tabSummaryBtn"),
+      tabBuyersBtn: document.getElementById("tabBuyersBtn"),
+      tabManifestBtn: document.getElementById("tabManifestBtn"),
+      tabExecutionBtn: document.getElementById("tabExecutionBtn"),
+      tabDebugBtn: document.getElementById("tabDebugBtn"),
+
+      tabSummary: document.getElementById("tabSummary"),
+      tabBuyers: document.getElementById("tabBuyers"),
+      tabManifest: document.getElementById("tabManifest"),
+      tabExecution: document.getElementById("tabExecution"),
+      tabDebug: document.getElementById("tabDebug")
+    };
+
+    async function api(path, method = "GET", body = null) {
+      const options = {
+        method,
+        headers: { "Content-Type": "application/json" }
+      };
+      if (body) options.body = JSON.stringify(body);
+
+      const res = await fetch(`${WORKER_BASE}${path}`, options);
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Non-JSON response from ${path}: ${text.slice(0, 200)}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+      }
+
+      return data;
+    }
+
+    function setLoading(button, loading, textLoading = "Working...") {
+      if (!button) return;
+      if (!button.dataset.originalText) button.dataset.originalText = button.textContent;
+      button.disabled = loading;
+      button.textContent = loading ? textLoading : button.dataset.originalText;
+    }
+
+    function safeArray(v) {
+      return Array.isArray(v) ? v : [];
+    }
+
+    function createItemCard(title, body, extra = "") {
+      const div = document.createElement("div");
+      div.className = "item-card";
+      div.innerHTML = `
+        <h4>${escapeHtml(title || "Untitled")}</h4>
+        <p>${escapeHtml(body || "—")}</p>
+        ${extra ? `<div style="height:10px"></div>${extra}` : ""}
+      `;
+      return div;
+    }
+
+    function renderTags(values) {
+      const row = document.createElement("div");
+      row.className = "tag-row";
+      values.forEach(v => {
+        const s = document.createElement("span");
+        s.className = "tag";
+        s.textContent = v;
+        row.appendChild(s);
+      });
+      return row.outerHTML;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function kvRows(obj, order = null) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "kv";
+      const keys = order || Object.keys(obj || {});
+      keys.forEach(key => {
+        const value = obj?.[key];
+        if (value === undefined || value === null || value === "") return;
+        const row = document.createElement("div");
+        row.className = "kv-row";
+        row.innerHTML = `
+          <div class="kv-key">${escapeHtml(key)}</div>
+          <div class="kv-value">${escapeHtml(typeof value === "object" ? JSON.stringify(value) : value)}</div>
+        `;
+        wrapper.appendChild(row);
+      });
+      return wrapper;
+    }
+
+    function renderList(target, items) {
+      target.innerHTML = "";
+      safeArray(items).forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        target.appendChild(li);
+      });
+      if (!safeArray(items).length) {
+        const li = document.createElement("li");
+        li.className = "muted";
+        li.textContent = "No items.";
+        target.appendChild(li);
+      }
+    }
+
+    function setActiveTab(tabName) {
+      const map = {
+        summary: [els.tabSummaryBtn, els.tabSummary],
+        buyers: [els.tabBuyersBtn, els.tabBuyers],
+        manifest: [els.tabManifestBtn, els.tabManifest],
+        execution: [els.tabExecutionBtn, els.tabExecution],
+        debug: [els.tabDebugBtn, els.tabDebug]
+      };
+
+      Object.entries(map).forEach(([name, [btn, pane]]) => {
+        const active = name === tabName;
+        btn.classList.toggle("primary", active);
+        pane.style.display = active ? (name === "summary" ? "grid" : "grid") : "none";
+      });
+    }
+
+    function renderCities(cities) {
+      els.citySelect.innerHTML = "";
+      cities.forEach(city => {
+        const opt = document.createElement("option");
+        opt.value = city.key;
+        opt.textContent = `${city.name} — ${city.status}`;
+        if (city.key === "chicago") opt.selected = true;
+        els.citySelect.appendChild(opt);
       });
 
-      const data = await res.json();
-      output.innerText = JSON.stringify(data, null, 2);
+      const summary = cities
+        .map(c => `${c.name}: ${c.status}`)
+        .join(" • ");
+      els.cityStatusText.textContent = summary;
     }
+
+    function renderPermits(permits) {
+      els.permitsList.innerHTML = "";
+
+      if (!permits.length) {
+        els.permitsList.innerHTML = `<div class="small">No permits found.</div>`;
+        els.permitsSummary.textContent = "No permits loaded.";
+        return;
+      }
+
+      els.permitsSummary.textContent = `${permits.length} permit${permits.length === 1 ? "" : "s"} loaded. Click one to inspect or analyze.`;
+
+      permits.forEach((permit) => {
+        const card = document.createElement("div");
+        card.className = "permit-card" + (state.selectedPermit?.id === permit.id ? " active" : "");
+        card.innerHTML = `
+          <h4>${escapeHtml(permit.address || "Unknown address")}</h4>
+          <div class="permit-meta">
+            <div><strong>Permit:</strong> ${escapeHtml(permit.permitNumber || "UNKNOWN")}</div>
+            <div><strong>Applicant:</strong> ${escapeHtml(permit.applicant || "Unknown")}</div>
+            <div><strong>Category:</strong> ${escapeHtml(permit.jobCategory || "General")}</div>
+            <div><strong>Issued:</strong> ${escapeHtml(permit.issuedDate || "—")}</div>
+            <div><strong>Scope:</strong> ${escapeHtml((permit.description || "").slice(0, 180) || "—")}</div>
+          </div>
+        `;
+        card.addEventListener("click", () => {
+          state.selectedPermit = permit;
+          renderPermits(state.permits);
+        });
+        els.permitsList.appendChild(card);
+      });
+    }
+
+    function renderAnalysis(analysis) {
+      state.selectedAnalysis = analysis;
+      els.analysisEmpty.style.display = "none";
+      els.analysisRoot.style.display = "grid";
+
+      const debug = analysis.debug || {};
+      const primary = analysis.primaryAngle || {};
+      const opportunityGraph = analysis.opportunityGraph || {};
+      const manifest = analysis.manifest || {};
+      const buyerRecon = analysis.buyerRecon || {};
+      const closingSOP = analysis.closingSOP || {};
+
+      els.primaryTitle.textContent = primary.title || "No primary angle";
+      els.primaryWhy.textContent = primary.whyFastest || "No summary available.";
+      els.primaryBuyerTag.textContent = `Buyer: ${primary.targetBuyer || "—"}`;
+      els.primaryMonetizationTag.textContent = `Value: ${primary.estimatedMonetization || "—"}`;
+      els.primaryPermitTypeTag.textContent = `Type: ${debug.permitType || "unknown"}`;
+
+      els.statBuyerTargets.textContent = String(safeArray(analysis.buyerTargets).length);
+      els.statEntities.textContent = String(safeArray(analysis.manifestEntities).length);
+      els.statVerticals.textContent = String(safeArray(opportunityGraph.verticals).length);
+      els.statProvider.textContent = debug.providerSuccess || "fallback";
+
+      els.verticalsCards.innerHTML = "";
+      safeArray(opportunityGraph.verticals).forEach(v => {
+        const extra = renderTags([
+          `Urgency: ${v.urgency || "—"}`,
+          `Value: ${v.estimatedValue ?? "—"}`,
+          `Ease: ${v.easeOfSale ?? "—"}`,
+          `First deal fit: ${v.firstDealFit ? "yes" : "no"}`
+        ]);
+        els.verticalsCards.appendChild(createItemCard(v.name, `${v.whyRelevant || "—"} ${v.whatTheySell ? "• " + v.whatTheySell : ""}`, extra));
+      });
+
+      els.chainsCards.innerHTML = "";
+      safeArray(opportunityGraph.crossSellChains).forEach(c => {
+        const seq = renderTags(safeArray(c.sequence));
+        els.chainsCards.appendChild(createItemCard(c.name, c.whyItMatters || "—", seq));
+      });
+
+      els.packagingCards.innerHTML = "";
+      safeArray(analysis.packagingIdeas).forEach(p => {
+        const extra = renderTags([
+          `Sell to: ${p.sellTo || "—"}`,
+          `Format: ${p.format || "—"}`,
+          `Pricing: ${p.pricingIdea || "—"}`
+        ]);
+        els.packagingCards.appendChild(createItemCard(p.title, "Packaged monetization angle", extra));
+      });
+
+      els.outreachCards.innerHTML = "";
+      safeArray(analysis.outreachAngles).forEach(o => {
+        const extra = renderTags([
+          `Vertical: ${o.vertical || "—"}`,
+          `CTA: ${o.cta || "—"}`
+        ]);
+        els.outreachCards.appendChild(createItemCard(o.hook || "Outreach angle", "Ready-to-use outreach positioning.", extra));
+      });
+
+      els.buyerTargetsCards.innerHTML = "";
+      safeArray(analysis.buyerTargets).forEach(b => {
+        const extra = renderTags([
+          `Vertical: ${b.vertical || "—"}`,
+          `Type: ${b.buyerType || "—"}`,
+          `Speed: ${b.speedToClose ?? "—"}`,
+          `Estimate: ${b.dealSizeEstimate || "—"}`
+        ]) + `<div class="mono" style="margin-top:10px;">${escapeHtml(b.firstMessage || "—")}</div>`;
+        els.buyerTargetsCards.appendChild(createItemCard(b.packagingAngle || "Buyer target", b.whyTheyBuy || "—", extra));
+      });
+
+      els.buyerReconKv.innerHTML = "";
+      els.buyerReconKv.appendChild(kvRows(buyerRecon, [
+        "whyThisProjectMatters",
+        "urgencyReason",
+        "valueOfIntel",
+        "whatTheyMissWithoutIt",
+        "timingWindow"
+      ]));
+
+      els.manifestCards.innerHTML = "";
+      safeArray(analysis.manifestEntities).forEach(m => {
+        const extra = renderTags([
+          `Role: ${m.role || "—"}`,
+          `Confidence: ${m.confidence || "—"}`,
+          `Verify: ${String(m.verificationNeeded)}`,
+          m.city ? `City: ${m.city}` : null,
+          m.state ? `State: ${m.state}` : null
+        ].filter(Boolean));
+        els.manifestCards.appendChild(createItemCard(m.entityName || "Unnamed entity", m.sourceHint || "—", extra));
+      });
+
+      els.manifestKv.innerHTML = "";
+      els.manifestKv.appendChild(kvRows(manifest, [
+        "permitNumber",
+        "address",
+        "city",
+        "description",
+        "estimatedCost",
+        "applicant",
+        "jobCategory",
+        "issuedDate"
+      ]));
+
+      els.closingKv.innerHTML = "";
+      els.closingKv.appendChild(kvRows(closingSOP, [
+        "step1",
+        "step2",
+        "step3",
+        "step4",
+        "pricingModel"
+      ]));
+
+      renderList(els.verificationList, analysis.verificationSteps);
+      renderList(els.evidenceList, analysis.evidence);
+      renderList(els.inferencesList, analysis.inferences);
+      renderList(els.unknownsList, analysis.unknowns);
+
+      els.dorkCards.innerHTML = "";
+      safeArray(analysis.dorkQueries).forEach(q => {
+        const card = createItemCard("Search query", q);
+        els.dorkCards.appendChild(card);
+      });
+
+      els.debugKv.innerHTML = "";
+      els.debugKv.appendChild(kvRows(debug, [
+        "providerSuccess",
+        "permitType",
+        "rawContactCount",
+        "playbookUsed",
+        "usedFallback"
+      ]));
+      els.rawPreview.textContent = debug.rawPreview || "No raw preview.";
+
+      setActiveTab("summary");
+    }
+
+    async function loadHealth() {
+      try {
+        const data = await api("/health");
+        els.healthDot.className = "dot good";
+        els.healthText.textContent = `Healthy • ${data.liveCity || "worker live"}`;
+      } catch (err) {
+        els.healthDot.className = "dot bad";
+        els.healthText.textContent = `Health failed • ${err.message}`;
+      }
+    }
+
+    async function loadCities() {
+      const data = await api("/cities");
+      state.cities = data.cities || [];
+      renderCities(state.cities);
+    }
+
+    async function fetchPermits() {
+      setLoading(els.fetchBtn, true, "Fetching...");
+      try {
+        const city = els.citySelect.value;
+        const limit = Number(els.limitInput.value || 5);
+        const data = await api("/fetch-permits", "POST", { city, limit });
+        state.permits = data.permits || [];
+        state.selectedPermit = state.permits[0] || null;
+        renderPermits(state.permits);
+      } catch (err) {
+        alert(`Fetch failed: ${err.message}`);
+      } finally {
+        setLoading(els.fetchBtn, false);
+      }
+    }
+
+    async function analyzeSelected() {
+      if (!state.selectedPermit) {
+        alert("Pick a permit first.");
+        return;
+      }
+
+      setLoading(els.analyzeSelectedBtn, true, "Analyzing...");
+      try {
+        const data = await api("/analyze", "POST", { permit: state.selectedPermit });
+        renderAnalysis(data);
+      } catch (err) {
+        alert(`Analyze failed: ${err.message}`);
+      } finally {
+        setLoading(els.analyzeSelectedBtn, false);
+      }
+    }
+
+    async function analyzeLive() {
+      setLoading(els.analyzeLiveBtn, true, "Running...");
+      try {
+        const city = els.citySelect.value;
+        const limit = Number(els.limitInput.value || 5);
+        const data = await api("/analyze-live", "POST", { city, limit });
+
+        if (safeArray(data.analyses).length) {
+          renderAnalysis(data.analyses[0]);
+        } else {
+          alert("Analyze Live returned no analyses.");
+        }
+      } catch (err) {
+        alert(`Analyze Live failed: ${err.message}`);
+      } finally {
+        setLoading(els.analyzeLiveBtn, false);
+      }
+    }
+
+    async function exportOpenRefine() {
+      setLoading(els.exportBtn, true, "Exporting...");
+      try {
+        const city = els.citySelect.value;
+        const limit = Number(els.limitInput.value || 25);
+        const data = await api("/export-openrefine", "POST", { city, limit });
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${city}_openrefine_export.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(`Export failed: ${err.message}`);
+      } finally {
+        setLoading(els.exportBtn, false);
+      }
+    }
+
+    els.fetchBtn.addEventListener("click", fetchPermits);
+    els.analyzeSelectedBtn.addEventListener("click", analyzeSelected);
+    els.analyzeLiveBtn.addEventListener("click", analyzeLive);
+    els.exportBtn.addEventListener("click", exportOpenRefine);
+    els.refreshHealthBtn.addEventListener("click", async () => {
+      await loadHealth();
+      await loadCities();
+    });
+
+    els.tabSummaryBtn.addEventListener("click", () => setActiveTab("summary"));
+    els.tabBuyersBtn.addEventListener("click", () => setActiveTab("buyers"));
+    els.tabManifestBtn.addEventListener("click", () => setActiveTab("manifest"));
+    els.tabExecutionBtn.addEventListener("click", () => setActiveTab("execution"));
+    els.tabDebugBtn.addEventListener("click", () => setActiveTab("debug"));
+
+    (async function init() {
+      try {
+        await loadHealth();
+        await loadCities();
+      } catch (err) {
+        els.cityStatusText.textContent = `Startup error: ${err.message}`;
+      }
+    })();
   </script>
 </body>
 </html>
+

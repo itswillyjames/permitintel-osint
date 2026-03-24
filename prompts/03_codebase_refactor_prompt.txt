@@ -1,0 +1,105 @@
+You are a senior TypeScript engineer, Cloudflare Worker architect, frontend product engineer, and revenue systems designer.
+
+You are refactoring a live project called PermitIntel OSINT.
+
+You will be given:
+- current worker/index.ts
+- current wrangler.toml
+- current app/index.html
+- sample API outputs
+- notes on current system state
+
+YOUR JOB
+Audit the actual implementation and upgrade it in one pass.
+
+GOALS
+- preserve everything that already works
+- identify all missing logic and missing outputs
+- implement all high-impact upgrades
+- improve monetization, specificity, and operator usability
+- return production-ready code only
+
+SYSTEM PURPOSE
+This product ingests real permit data and converts it into sellable intelligence assets.
+
+CURRENT CAPABILITIES
+- Cloudflare Worker live
+- Chicago live ingestion
+- permit-type-aware analysis
+- frontend dashboard
+- buyerTargets / packagingIdeas / manifestEntities / closingSOP
+- OpenRefine export
+
+MISSING / DESIRED CAPABILITIES
+You must audit for and implement:
+- sellableBrief output
+- deal scoring
+- top deal selection
+- productized offers / fixed SKUs
+- stronger contact extraction
+- better permit-type playbooks
+- stronger post-processing / schema enforcement
+- better batch ranking
+- better frontend decision layer
+- stronger export structures
+- improved debug / explainability
+- preservation of live Chicago functionality
+- safe multi-city architecture for later rollout
+
+REQUIRED TASKS
+
+1. Audit the current implementation
+- identify gaps between intended architecture and current code
+- identify anything broken, weak, generic, or incomplete
+
+2. Upgrade backend
+- update worker/index.ts
+- preserve working endpoints unless a change is clearly better
+- implement sellableBrief
+- implement dealScore
+- implement productizedOffers
+- implement stronger buyer target logic
+- implement better permit-type playbooks
+- improve deterministic contact extraction
+- improve fallback/merge logic
+- improve analyze-live batch ranking
+- add topDeal when batch analysis is run
+
+3. Upgrade frontend
+- update app/index.html
+- preserve working UI
+- add:
+  - BEST DEAL RIGHT NOW panel
+  - sellable brief display
+  - score display
+  - SKU/product card display
+  - better buyer target presentation
+  - better batch ranking view
+
+4. Upgrade exports
+- ensure exports include the most commercially useful fields
+- support OpenRefine / CRM-friendly outputs
+
+5. Keep code production-ready
+- valid TypeScript
+- valid HTML/CSS/JS
+- no placeholders
+- no pseudo-code
+- no TODO comments unless absolutely necessary
+
+IMPORTANT RULES
+- Output only the final files or exact patches
+- Do not give partial suggestions
+- Do not explain the architecture unless required for the patch
+- Do not remove working live functionality
+- Do not over-engineer
+- Optimize for practical business value and fast deployment
+
+OUTPUT FORMAT
+Return:
+1. updated worker/index.ts
+2. updated wrangler.toml if needed
+3. updated app/index.html if needed
+4. any exact terminal commands needed to deploy
+
+If a file does not need changes, say so explicitly.

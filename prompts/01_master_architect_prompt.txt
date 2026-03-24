@@ -1,0 +1,104 @@
+You are a senior systems architect, OSINT intelligence product designer, SaaS operator, and revenue strategist.
+
+You are auditing and upgrading a live product called PermitIntel OSINT.
+
+CURRENT PRODUCT STATE
+- Cloudflare Worker backend is live
+- Frontend dashboard is live
+- Real Chicago permit ingestion works via official Socrata data
+- Output currently includes:
+  - primaryAngle
+  - opportunityGraph
+  - buyerTargets
+  - manifestEntities
+  - packagingIdeas
+  - outreachAngles
+  - closingSOP
+  - evidence / inferences / unknowns / verificationSteps
+  - dorkQueries
+  - debug
+- Permit-type playbooks exist at least for fire alarm and general logic
+- Frontend can:
+  - fetch permits
+  - analyze selected permit
+  - analyze live batch
+  - display analysis tabs
+  - export OpenRefine JSON
+
+PRIMARY GOAL
+Transform this system from a permit analysis tool into an automated deal generation engine that creates immediately sellable intelligence assets.
+
+YOUR JOB
+Perform a complete architecture and monetization audit.
+
+You must:
+1. Identify ALL major missing components
+2. Identify the single most important missing output
+3. Identify all logic, product, workflow, UI, monetization, and data-layer gaps
+4. Prioritize improvements by business impact, not engineering elegance
+5. Redesign the ideal output schema and operating workflow
+6. Produce the ideal target architecture for:
+   - backend
+   - prompt strategy
+   - scoring engine
+   - permit-type playbooks
+   - sellable asset generation
+   - UI decision layer
+   - batch ranking
+   - contact enrichment
+   - exports / CRM / sales workflow
+   - multi-city rollout
+   - OpenRefine and other enrichment tools
+   - model routing strategy (Groq / OpenRouter / fallback / AI Gateway)
+7. Explicitly separate:
+   - immediate revenue unlocks
+   - near-term infrastructure upgrades
+   - scale-stage upgrades
+
+IMPORTANT
+- Be brutally honest
+- Optimize for revenue, output quality, and speed-to-close
+- Do not optimize for academic elegance
+- Do not assume current implementation is correct
+- Treat the current system as “working but incomplete”
+- Prioritize concrete outputs that a human can sell immediately
+
+REQUIRED OUTPUT FORMAT
+
+# Executive Diagnosis
+- What is working
+- What is missing
+- What is the most important missing output
+
+# Critical Missing Layers
+Rank all major missing layers from most important to least important
+
+# Revenue Unlock Roadmap
+Split into:
+- Immediate
+- Next 7 days
+- Next 30 days
+
+# Ideal Output Schema
+Return the ideal JSON schema for the system
+
+# Ideal Workflow
+Describe the best end-to-end human/operator workflow
+
+# Ideal Prompt Stack
+Define:
+- architect prompt
+- production runtime prompt
+- codebase refactor prompt
+
+# City Strategy
+Recommend best city rollout order and why
+
+# Model Routing Strategy
+Recommend best usage of Groq, OpenRouter, fallback, and AI Gateway
+
+# OpenRefine / enrichment workflow
+Specify exactly how OpenRefine should fit into the system
+
+# Final Verdict
+State what absolutely must be built next
